@@ -112,16 +112,23 @@ the j-th vocabulary word is present in the preprocessed version of original_emai
 """
 def email_to_vector(vocabulary, original_email):
     email_words = processEmail(original_email).split(" ") # List of words in the preprocessed version of original_email
-    ...
-    return ...
+    vocab_length = len(vocabulary)
+    feature_vector = np.zeros(vocab_length)
+
+    for i in range(vocab_length):
+        if vocabulary[i] in email_words:
+            feature_vector[i] = 1
+    return feature_vector
 
 
 """ TODO:
 To test your email_to_vector(..) function, call it using the sample_email text defined previously.
 Count how many entries in the resulting feature-vector are set to 1? It should be about 43 among 1899.
 """
-# x = email_to_vector(..)
-# ...
+x = email_to_vector(vocabulary, sample_email)
+ones_count = np.sum(x)
+print(f"feature vector shape = {x.shape}")
+print(f"Number of ones = {int(ones_count)}")
 
 # %% [markdown]
 # Normally, to construct a training set, the next part should be calling the function `email_to_vector(..)` on each email we have. However, to save time, we have prepared the dataset for you by preprocessing all emails and representing them as a feature-vectors. In the next sections, you will load the dataset and use it to train a SVM classifier that will classify new emails as either spam or not spam.
@@ -181,9 +188,9 @@ clf = SVC(C=0.03, kernel="linear").fit(X, y)
 """ TODO:
 Compute here the training accuracy and the test accuracy of clf.
 """
-# acc_train = ...
-# acc_test = ...
-# print("Training Accuracy = {}, Test Accuracy = {}".format(acc_train, acc_test))
+acc_train = clf.score(X, y) * 100
+acc_test = clf.score(Xtest, ytest) * 100
+print("Training Accuracy = {}, Test Accuracy = {}".format(acc_train, acc_test))
 
 # %% [markdown]
 # ## 4. Top Predictors for Spam
@@ -209,8 +216,13 @@ multiplied by the highest parameter values theta_j. So you need to find the indi
 highest parameter values, and print the vocabulary words corresponding to these indices. You 
 can use np.argsort(arr) which returns the indices that would sort an array.
 """
-# ...
-# ...
+
+# slice the 10 indeces from the sorted theta i ascendin order
+top_indices = np.argsort(theta)[-10:][::-1]
+
+print("Top 10 predictors of spam:")
+for i, idx in enumerate(top_indices):
+    print(f"{i+1:2d}. {vocabulary[idx]:15s} ({theta[idx]:.4f})")
 
 
 # %% [markdown]
@@ -219,25 +231,33 @@ can use np.argsort(arr) which returns the indices that would sort an array.
 
 # %%
 email_text = """
-Do You Want To Make $1000 Or More Per Week?
+Your new subscription
+Number: 035686425
+Subscription: 5 GB of data/month with unlimited calls and messages within Sweden
+Promotion: 20SEK for 3 months and 100 GB for 12 months
+Regular price: 120 SEK/month
+Tip discount: 0 SEK/month
 
-If you are a motivated and qualified individual - I 
-will personally demonstrate to you a system that will 
-make you $1,000 per week or more! This is NOT mlm.
+ 
+Getting Started Guide
+Now that we have received your order, there are only two things you need to know to get started with your new subscription.
 
-Call our 24 hour pre-recorded number to get the 
-details.
+1. Your number porting
+Your number porting has been ordered and we will soon send you an email confirming whether your old operator has approved the number porting or not.
 
-000-456-789
+In that email you will see the date the move will take place or if you need to do anything before we help you with another attempt.
 
-I need people who want to make serious money.  Make 
-the call and get the facts. Invest 2 minutes in yourself now!
+2. Your new Vimla SIM card
+We will send your new SIM card directly so you will have it with you within 2-4 business days. You can start calling, texting and surfing with it as soon as the number porting is complete.
 
-000-456-789
+If you are not sure which address we will send your SIM card to, you can easily log in to Mitt Vimla or in the app and look at the address under your account details.
 
-Looking forward to your call and I will introduce you 
-to people like yourself who
-are currently making $10,000 plus per week!"""
+3. The Vimla app and My Vimla
+In the Vimla app and on My Vimla you can easily review and change your browsing level. You will also find settings for payments, international and premium services, tips and much more.
+
+Did you know that you can share your referral link to lower your monthly cost by 10 SEK for each person you refer to get Vimla?
+
+Download the app immediately!"""
 
 
 x = email_to_vector(vocabulary, email_text) # Converting the raw email text to a feature-vector x
